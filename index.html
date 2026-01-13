@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communities' Choice – Round 1 Data Story</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Arial+Nova:ital,wght@0,400;0,700;1,400&family=DynaPuff:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-bg: #f8fafc;
+            --color-text: #1e293b;
+            --primary: #9333ea;
+            --primary-light: #f3e8ff;
+            --accent: #14b8a6;
+            --glass: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.98);
+            --shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
+            --font-display: "DynaPuff", cursive;
+            --font-sans: "Arial Nova", Arial, sans-serif;
+            
+            /* Official Area Branding Colours */
+            --color-bln: #FFC000;
+            --color-tuc: #4EA72E;
+            --color-tps: #0070C0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: #f1f5f9;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(147, 51, 234, 0.1) 0px, transparent 50%), 
+                radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--color-text);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, h4, .font-display { font-family: var(--font-display); }
+
+        .app-container { display: flex; height: 100%; position: relative; }
+        
+        .sidebar {
+            width: 320px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border-right: 1px solid rgba(0,0,0,0.05);
+            padding: 2rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+        }
+
+        .logo-nav {
+            width: 100%;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .logo-nav img {
+            width: 100%;
+            max-width: 220px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .main-viewport {
+            flex: 1;
+            overflow-y: auto;
+            padding: 3rem;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px; margin-bottom: 8px;
+            border-radius: 18px; color: #64748b; font-weight: 700; transition: all 0.3s ease;
+            cursor: pointer; border: 2px solid transparent;
+        }
+        .nav-link:hover { background: #f8fafc; color: var(--primary); transform: translateX(5px); }
+        .nav-link.active { background: white; color: var(--primary); border-color: var(--primary); box-shadow: var(--shadow); }
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 32px; padding: 2rem; box-shadow: var(--shadow); margin-bottom: 2.5rem;
+        }
+
+        .view-pane { display: none; }
+        .view-pane.active { display: block; animation: slideUp 0.6s cubic-bezier(0, 0, 0.2, 1) forwards; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Project Card Flip Logic */
+        .card-container { perspective: 1000px; height: 210px; margin-bottom: 1.5rem; cursor: pointer; }
+        .card-inner {
+            position: relative; width: 100%; height: 100%; text-align: left;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d;
+        }
+        .card-container.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden;
+            backface-visibility: hidden; border-radius: 24px; display: flex; align-items: center;
+            padding: 1.5rem 2rem; box-shadow: var(--shadow);
+        }
+        .card-front { background: var(--glass); border: 1px solid var(--glass-border); }
+        .card-back { 
+            background: #1e293b; color: white; transform: rotateY(180deg); 
+            flex-direction: column; justify-content: center; align-items: flex-start;
+        }
+
+        .priority-pill {
+            padding: 4px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.05em; color: white; margin-right: 6px; margin-top: 6px;
+            display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 95px; padding: 1.5rem 0.5rem; }
+            .nav-text, .profile-meta { display: none; }
+            .nav-link { justify-content: center; padding: 12px; }
+            .main-viewport { padding: 1.5rem; }
+            .logo-nav img { max-width: 65px; }
+            .card-container { height: 260px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <nav class="sidebar">
+        <div class="logo-nav">
+            <img src="PB English Transparent.png" alt="Communities' Choice Logo" onerror="this.src='https://via.placeholder.com/220x80?text=COMMUNITIES+CHOICE'">
+        </div>
+
+        <div class="flex-1 space-y-1">
+            <div class="nav-link active" onclick="router('summary', this)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <span class="nav-text">Round 1 Summary</span>
+            </div>
+            <div class="nav-link" onclick="router('journey', this)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span class="nav-text">The PB Journey</span>
+            </div>
+
+            <div class="mt-8 mb-4 px-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em] nav-text">Community Stories</div>
+            
+            <div class="nav-link" onclick="router('bln', this)">
+                <span class="w-3 h-3 rounded-full" style="background-color: var(--color-bln);"></span>
+                <span class="nav-text">Blaenavon</span>
+            </div>
+            <div class="nav-link" onclick="router('tuc', this)">
+                <span class="w-3 h-3 rounded-full" style="background-color: var(--color-tuc);"></span>
+                <span class="nav-text">Thornhill & Upper Cwmbran</span>
+            </div>
+            <div class="nav-link" onclick="router('tps', this)">
+                <span class="w-3 h-3 rounded-full" style="background-color: var(--color-tps);"></span>
+                <span class="nav-text">Trevethin, Penygarn & St Cadocs</span>
+            </div>
+
+            <div class="mt-8 mb-4 px-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.2em] nav-text">Insights</div>
+            <div class="nav-link" onclick="router('finance', this)">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <text x="6" y="18" font-family="Arial" font-size="12" font-weight="bold" fill="currentColor">£</text>
+                </svg>
+                <span class="nav-text">Financial Outcome</span>
+            </div>
+        </div>
+
+        <div class="mt-auto p-5 bg-white/50 rounded-3xl border border-white profile-meta">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg">DW</div>
+                <div>
+                    <p class="text-sm font-bold text-gray-800">Dan Watkins</p>
+                    <p class="text-[10px] text-gray-400 font-extrabold uppercase">PB Coordinator</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-viewport">
+        <!-- View: Summary -->
+        <div id="summary" class="view-pane active">
+            <header class="mb-12">
+                <h1 class="text-5xl font-display font-bold text-gray-900 leading-tight">Empowering Communities,<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-teal-500">Deciding our Future.</span></h1>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 text-center">
+                <div class="glass-card p-8">
+                    <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">Total Funding Awarded</span>
+                    <span class="text-4xl font-bold text-primary">£99,212</span>
+                </div>
+                <div class="glass-card p-8 bg-gray-900 text-white border-none shadow-2xl">
+                    <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">Authenticated Votes</span>
+                    <span class="text-4xl font-bold">2,159</span>
+                </div>
+                <div class="glass-card p-8">
+                    <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">Community Proposals</span>
+                    <span class="text-4xl font-bold">17</span>
+                </div>
+                <div class="glass-card p-8">
+                    <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">Available Surplus</span>
+                    <span class="text-4xl font-bold text-teal-600">£231,088</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div class="col-span-2 glass-card">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center gap-3"><span class="w-1.5 h-8 bg-primary rounded-full"></span>The Round 1 Outcome</h3>
+                    <p class="text-lg text-gray-600 leading-relaxed mb-4">Following months of community dialogue, the first full round has allocated <strong>£99,212.00</strong> across seventeen transformative initiatives.</p>
+                    <p class="text-gray-600">Every pound invested was directed by residents towards the specific local priorities identified during the 'Have Your Say!' campaign.</p>
+                </div>
+                <div class="glass-card flex flex-col items-center justify-center">
+                    <h3 class="text-lg font-bold mb-6">Democratic Sphere</h3>
+                    <div class="w-full h-64"><canvas id="polarEngagementChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Journey -->
+        <div id="journey" class="view-pane">
+            <header class="mb-12"><h2 class="text-4xl font-display font-bold text-gray-800">The Participatory Journey</h2></header>
+            <div class="glass-card">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="text-center md:text-left">
+                        <div class="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center font-bold text-xl mb-4 shadow-lg mx-auto md:mx-0">1</div>
+                        <h4 class="font-bold text-gray-800 mb-2">Have Your Say!</h4>
+                        <p class="text-xs text-gray-500">1,062 consultation responses identified local priorities.</p>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <div class="w-12 h-12 bg-teal-500 text-white rounded-xl flex items-center justify-center font-bold text-xl mb-4 shadow-lg mx-auto md:mx-0">2</div>
+                        <h4 class="font-bold text-gray-800 mb-2">Co-Production</h4>
+                        <p class="text-xs text-gray-500">People's Committees summarised themes and shaped criteria.</p>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <div class="w-12 h-12 bg-indigo-500 text-white rounded-xl flex items-center justify-center font-bold text-xl mb-4 shadow-lg mx-auto md:mx-0">3</div>
+                        <h4 class="font-bold text-gray-800 mb-2">Public Vote</h4>
+                        <p class="text-xs text-gray-500">2,159 votes determined the final funding list across formats.</p>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <div class="w-12 h-12 bg-gray-800 text-white rounded-xl flex items-center justify-center font-bold text-xl mb-4 shadow-lg mx-auto md:mx-0">4</div>
+                        <h4 class="font-bold text-gray-800 mb-2">Allocation</h4>
+                        <p class="text-xs text-gray-500">£99,212 invested into community social value projects.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                <div class="glass-card">
+                    <h4 class="font-bold mb-6">Engagement Split</h4>
+                    <div class="h-64"><canvas id="journeyVoteChart"></canvas></div>
+                </div>
+                <div class="glass-card bg-gray-900 text-white flex flex-col justify-center text-center">
+                    <h4 class="text-xl font-bold mb-4">Democratic Integrity</h4>
+                    <p class="text-sm text-gray-400 px-10">Round 1 achieved 81% digital engagement while maintaining vital in-person support for digital inclusion via community events.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Area Stories (Injected by JS) -->
+        <div id="areaPane" class="view-pane"></div>
+
+        <!-- View: Finance -->
+        <div id="finance" class="view-pane">
+            <header class="mb-12"><h2 class="text-4xl font-display font-bold text-gray-800">Financial Intelligence</h2></header>
+            <div class="glass-card p-0 overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-gray-50/50 border-b">
+                        <tr>
+                            <th class="p-8 font-extrabold text-gray-400 uppercase tracking-widest">Community Area</th>
+                            <th class="p-8 font-extrabold text-gray-400 uppercase tracking-widest text-right">Pool</th>
+                            <th class="p-8 font-extrabold text-gray-400 uppercase tracking-widest text-right">Allocated</th>
+                            <th class="p-8 font-extrabold text-gray-400 uppercase tracking-widest text-right">Carry Forward</th>
+                            <th class="p-8 font-extrabold text-gray-400 uppercase tracking-widest text-right">Utilisation</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="financeTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const DB = {
+        areas: {
+            BLN: {
+                name: "Blaenavon", fullName: "Blaenavon", color: "#FFC000",
+                stats: { budget: 73450, votes: 1349, threshold: 135 },
+                priorities: ["Youth Services & Activities", "Transport", "Antisocial Behaviour", "Health & Wellbeing", "Environment & Place (Maintenance)", "Heritage & Tourism"],
+                projects: [
+                    { name: "Blaenavon Mini & Juniors RFC", cost: 4044, votes: 378, cat: "Youth / Sport", details: "Critical safety floodlighting to extend participation hours for young athletes and improve safe access during winter months.", priorities: [1, 4] },
+                    { name: "Blaenavon Blues AFC", cost: 9960, votes: 247, cat: "Environment / Hub", details: "Major clubhouse refurbishment creating a multi-generational community hub and improving accessible facilities for local teams.", priorities: [4, 5] },
+                    { name: "Torfaen Youth Service", cost: 540, votes: 231, cat: "Youth / Heritage", details: "Youth-led heritage interpretation sessions connecting generations through local history workshops.", priorities: [1, 6] },
+                    { name: "Horticultural Project VC School", cost: 2086, votes: 225, cat: "Education / Environment", details: "Intergenerational gardening programme at Blaenavon Heritage VC School to foster ecological learning.", priorities: [1, 5] },
+                    { name: "Blaenavon Town Band", cost: 7950, votes: 161, cat: "Culture / Youth", details: "Tuition and instrument provision for the local youth development section, preserving musical heritage.", priorities: [1, 6] }
+                ]
+            },
+            TUC: {
+                name: "TUC", fullName: "Thornhill & Upper Cwmbran", color: "#4EA72E",
+                stats: { budget: 81850, votes: 113, threshold: 11.3 },
+                priorities: ["Health & Wellbeing", "Youth Services & Activities", "Environmental Sustainability", "Building Stronger Communities", "Antisocial Behaviour", "Education & Skills"],
+                projects: [
+                    { name: "Thornhill Community Centre", cost: 10000, votes: 23, cat: "Community Hub", details: "Enhanced play and respite provision for local families and children at the heart of the community.", priorities: [2, 4] },
+                    { name: "Blaenbran Community Woodland", cost: 974, votes: 20, cat: "Environment", details: "Accessibility improvements and sustainable woodland management paths for local walkers and nature enthusiasts.", priorities: [3, 4] },
+                    { name: "PANIK ART - Street Art Stars", cost: 9548, votes: 16, cat: "Youth / Arts", details: "Youth-led graffiti and street art workshops targeting vandalism reduction through creative expression.", priorities: [2, 5] },
+                    { name: "HIPHOP 12", cost: 9876, votes: 14, cat: "Youth / Dance", details: "Creative street dance and physical health programme for young people across Upper Cwmbran.", priorities: [1, 2] },
+                    { name: "Pontnewydd Male Voice Choir", cost: 1590, votes: 14, cat: "Culture / Health", details: "Revitalisation programme to increase community membership and combat social isolation.", priorities: [1, 4] },
+                    { name: "Torfaen Talks CIC (TUC)", cost: 3300, votes: 11, cat: "Mental Health", details: "Subsidised mental health counselling specifically for residents in the TUC community area.", priorities: [1, 4] }
+                ]
+            },
+            TPS: {
+                name: "TPS", fullName: "Trevethin, Penygarn & St Cadocs", color: "#0070C0",
+                stats: { budget: 175000, votes: 697, threshold: 70 },
+                priorities: ["Environment & Place (Maintenance)", "Youth Services & Activities", "Health & Wellbeing", "Older Peoples Activities", "Crime & Community Safety", "Education & Skills"],
+                projects: [
+                    { name: "Penygarn Trevethin FC", cost: 10009, votes: 189, cat: "Youth / Sport", details: "Facility and training kit provision for expanding youth team engagement and physical literacy.", priorities: [2, 3] },
+                    { name: "Trevethin Community Centre", cost: 10000, votes: 135, cat: "Infrastructure", details: "Essential kitchen and hub renovation for the community hot-meal service and food security initiatives.", priorities: [1, 4] },
+                    { name: "MentROAR", cost: 3300, votes: 95, cat: "Mentoring", details: "Trauma-informed sports mentoring for at-risk young people to improve attendance and life outcomes.", priorities: [2, 5] },
+                    { name: "Torfaen Young Parents Group", cost: 2775, votes: 83, cat: "Social Support", details: "Peer support and life-skills workshops for young families to build resilient community bonds.", priorities: [2, 6] },
+                    { name: "Strive to Arrive", cost: 3300, votes: 72, cat: "Education", details: "Attendance motivation and wrap-around support for school-age residents across Trevethin and Penygarn.", priorities: [2, 6] },
+                    { name: "TIDY BUTT", cost: 9960, votes: 70, cat: "Mental Health", details: "Community-led men's mental health support and suicide prevention workshops.", priorities: [3, 5] }
+                ]
+            }
+        }
+    };
+
+    function router(viewId, el) {
+        document.querySelectorAll('.view-pane').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        if(['bln', 'tuc', 'tps'].includes(viewId)) {
+            renderArea(viewId);
+            document.getElementById('areaPane').classList.add('active');
+        } else {
+            const pane = document.getElementById(viewId);
+            if(pane) pane.classList.add('active');
+        }
+        if(el) el.classList.add('active');
+        if(viewId === 'summary') initSummaryCharts();
+        if(viewId === 'journey') initJourneyCharts();
+        if(viewId === 'finance') renderFinance();
+    }
+
+    function renderArea(key) {
+        const area = DB.areas[key.toUpperCase()];
+        const pane = document.getElementById('areaPane');
+        let html = `
+            <header class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div><h2 class="text-4xl font-display font-bold" style="color: ${area.color}">${area.fullName}</h2></div>
+                <div class="glass-card mb-0 py-3 px-6"><span class="text-[10px] font-extrabold text-gray-400 block uppercase">10% Democratic Threshold</span><span class="text-2xl font-bold">${area.stats.threshold} Votes</span></div>
+            </header>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div class="col-span-2">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">Invested Initiatives <span class="text-xs text-gray-400 font-normal ml-2 tracking-wide">(CLICK CARD TO FLIP)</span></h3>
+                    ${area.projects.map(p => `
+                        <div class="card-container" onclick="this.classList.toggle('flipped')">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <div class="flex-1 pr-4">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <div class="w-2 h-2 rounded-full" style="background-color: ${area.color}"></div>
+                                            <h4 class="font-bold text-lg text-gray-800 leading-snug">${p.name}</h4>
+                                        </div>
+                                        <div class="flex flex-wrap">
+                                            ${p.priorities.map(prIndex => `<span class="priority-pill" style="background-color: ${area.color}">${area.priorities[prIndex-1]}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                    <div class="text-right border-l pl-6 border-gray-100 min-w-[140px]">
+                                        <p class="text-2xl font-bold text-gray-800">£${p.cost.toLocaleString()}</p>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${p.votes} Votes</p>
+                                    </div>
+                                </div>
+                                <div class="card-back">
+                                    <div class="flex justify-between w-full mb-3">
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-accent">Initiative Impact</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">${p.cat}</span>
+                                    </div>
+                                    <p class="text-sm leading-relaxed text-gray-200">${p.details}</p>
+                                    <div class="mt-auto w-full pt-4 border-t border-white/10 flex justify-between">
+                                        <span class="text-[10px] text-gray-400">Addressed Community Needs</span>
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase">Click to close</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`).join('')}
+                </div>
+                <div class="glass-card">
+                    <h4 class="font-bold mb-6 border-b pb-4 border-gray-100">Top 6 Community Priorities</h4>
+                    <div class="space-y-4">
+                        ${area.priorities.map((pr, i) => `
+                            <div class="flex items-center gap-4 p-4 bg-white/50 rounded-2xl border border-gray-50 transition-colors hover:bg-white">
+                                <span class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md flex-shrink-0" style="background: ${area.color}">${i+1}</span>
+                                <span class="text-sm font-bold text-gray-700 leading-tight">${pr}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>
+            </div>`;
+        pane.innerHTML = html;
+    }
+
+    function renderFinance() {
+        const tbody = document.getElementById('financeTableBody');
+        let totalAlloc = 0; let html = '';
+        Object.values(DB.areas).forEach(area => {
+            const alloc = area.projects.reduce((sum, p) => sum + p.cost, 0);
+            totalAlloc += alloc;
+            html += `
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="p-8 font-bold text-gray-800">${area.fullName}</td>
+                    <td class="p-8 text-right font-bold text-gray-400">£${area.stats.budget.toLocaleString()}</td>
+                    <td class="p-8 text-right font-bold text-primary">£${alloc.toLocaleString()}</td>
+                    <td class="p-8 text-right font-bold text-teal-600">£${(area.stats.budget - alloc).toLocaleString()}</td>
+                    <td class="p-8 text-right"><span class="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-bold text-gray-400">${((alloc/area.stats.budget)*100).toFixed(1)}%</span></td>
+                </tr>`;
+        });
+        tbody.innerHTML = html + `<tr class="bg-gray-900 text-white font-bold"><td class="p-8 rounded-bl-3xl">TOTAL ROUND 1</td><td class="p-8 text-right">£330,300</td><td class="p-8 text-right">£99,212</td><td class="p-8 text-right text-teal-400">£231,088</td><td class="p-8 text-right rounded-br-3xl">30.0%</td></tr>`;
+    }
+
+    let summaryChart, journeyChart;
+    function initSummaryCharts() {
+        if(summaryChart) summaryChart.destroy();
+        summaryChart = new Chart(document.getElementById('polarEngagementChart'), {
+            type: 'polarArea',
+            data: { labels: ['BLN', 'TUC', 'TPS'], datasets: [{ data: [1349, 113, 697], backgroundColor: ['#FFC000cc', '#4EA72Ecc', '#0070C0cc'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { display: false } } } }
+        });
+    }
+
+    function initJourneyCharts() {
+        if(journeyChart) journeyChart.destroy();
+        journeyChart = new Chart(document.getElementById('journeyVoteChart'), {
+            type: 'bar',
+            data: { labels: ['Digital Votes', 'In-Person Votes'], datasets: [{ data: [1739, 420], backgroundColor: ['#9333ea', '#14b8a6'], borderRadius: 12 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+        });
+    }
+
+    window.onload = () => { router('summary'); };
+</script>
+</body>
+</html>
